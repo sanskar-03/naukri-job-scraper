@@ -427,3 +427,75 @@ def get_search_history(path):
     wb.close()
 
     return history
+
+
+def delete_search(path, keyword="", location="", search_name=None):
+    ensure_workbook(path)
+    wb = load_workbook(path)
+
+    target_sheet = search_name
+    if not target_sheet and (keyword or location):
+        target_sheet = clean_sheet_name(keyword, location)
+
+    if not target_sheet:
+        wb.close()
+        return False
+
+    found_sheet = None
+    for name in wb.sheetnames:
+        if name.lower() == str(target_sheet).lower():
+            found_sheet = name
+            break
+
+    if not found_sheet or found_sheet == MASTER_SHEET:
+        wb.close()
+        return False
+
+    del wb[found_sheet]
+
+    # Rebuild Master History from remaining sheets so it remains consistent
+    if MASTER_SHEET in wb.sheetnames:
+        del wb[MASTER_SHEET]
+
+    master_ws = wb.create_sheet(MASTER_SHEET, 0)
+    master_ws.append(HEADERS)
+    for cell in master_ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="1f2937")
+        cell.alignment = Alignment(horizontal="center")
+    prepare_sheet(master_ws)
+
+    seen_keys = set()
+    for name in wb.sheetnames:
+        if name == MASTER_SHEET:
+            continue
+        ws = wb[name]
+        for job in read_sheet_jobs(ws):
+            key = str(job.get("job_id") or "") + "|" + str(job.get("job_url") or "")
+            if key not in seen_keys:
+                seen_keys.add(key)
+                master_ws.append([job.get(h, "") for h in HEADERS])
+
+    wb.save(path)
+    wb.close()
+    return True
+
+
+def delete_all_searches(path):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = MASTER_SHEET
+    ws.append(HEADERS)
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="1f2937")
+        cell.alignment = Alignment(horizontal="center")
+    prepare_sheet(ws)
+
+    wb.save(path)
+    wb.close()
+    return True
+

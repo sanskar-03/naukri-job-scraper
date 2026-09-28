@@ -19,7 +19,10 @@ from .excel_store import (
     read_search_jobs,
     export_search_excel,
     get_search_history,
+    delete_search,
+    delete_all_searches,
 )
+
 
 log = logging.getLogger(__name__)
 
@@ -118,7 +121,83 @@ def search_history_api(request):
         )
 
 
+@require_http_methods(["POST", "DELETE"])
+@csrf_exempt
+def delete_search_api(request):
+    try:
+        body = {}
+        if request.body:
+            try:
+                body = json.loads(request.body.decode() or "{}")
+            except Exception:
+                body = {}
+
+        search_name = str(body.get("search_name") or request.GET.get("search_name") or "").strip()
+        keyword = str(body.get("keyword") or request.GET.get("keyword") or "").strip()
+        location = str(body.get("location") or request.GET.get("location") or "").strip()
+
+        success = delete_search(
+            settings.DATA_FILE,
+            keyword=keyword,
+            location=location,
+            search_name=search_name
+        )
+
+        if not success:
+            return JsonResponse(
+                {
+                    "ok": False,
+                    "error": "Search not found or already deleted."
+                },
+                status=404
+            )
+
+        history = get_search_history(settings.DATA_FILE)
+        return JsonResponse(
+            {
+                "ok": True,
+                "message": "Search deleted successfully.",
+                "searches": history
+            }
+        )
+
+    except Exception as exc:
+        log.exception("delete_search_api failed")
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": str(exc)
+            },
+            status=500
+        )
+
+
+@require_http_methods(["POST", "DELETE"])
+@csrf_exempt
+def delete_all_searches_api(request):
+    try:
+        delete_all_searches(settings.DATA_FILE)
+        return JsonResponse(
+            {
+                "ok": True,
+                "message": "All search history has been cleared.",
+                "searches": []
+            }
+        )
+
+    except Exception as exc:
+        log.exception("delete_all_searches_api failed")
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": str(exc)
+            },
+            status=500
+        )
+
+
 def download_excel(request):
+
 
     try:
 

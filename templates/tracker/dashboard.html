@@ -309,8 +309,41 @@
                 </h2>
 
                 <p>
-                    Each search is stored separately.
+                    Each search is stored separately in the workbook.
                 </p>
+
+            </div>
+
+            <div class="history-header-actions">
+
+                <button
+                    id="deleteAllHistoryBtn"
+                    class="button small danger"
+                    type="button"
+                    title="Delete all previous search history"
+                >
+                    Delete All
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="history-toolbar">
+
+            <div class="history-search-wrapper">
+
+                <input
+                    id="historySearchInput"
+                    type="text"
+                    placeholder="Search previous history by keyword or location..."
+                    autocomplete="off"
+                >
+
+                <span
+                    id="historySearchCount"
+                    class="history-search-count"
+                ></span>
 
             </div>
 
@@ -325,6 +358,7 @@
         </div>
 
     </section>
+
 
 </div>
 

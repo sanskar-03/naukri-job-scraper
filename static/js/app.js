@@ -34,6 +34,18 @@ const statNew =
 const historyBox =
     document.getElementById("searchHistory");
 
+const historySearchInput =
+    document.getElementById("historySearchInput");
+
+const historySearchCount =
+    document.getElementById("historySearchCount");
+
+const deleteAllHistoryBtn =
+    document.getElementById("deleteAllHistoryBtn");
+
+let allHistorySearches = [];
+
+
 
 function escapeHtml(value) {
 
@@ -288,139 +300,160 @@ async function loadCurrentSearch(
 }
 
 
-async function loadHistory() {
+function filterAndRenderHistory() {
+    const query = (historySearchInput ? historySearchInput.value : "").trim().toLowerCase();
 
-    try {
+    if (deleteAllHistoryBtn) {
+        deleteAllHistoryBtn.disabled = allHistorySearches.length === 0;
+    }
 
-        const data =
-            await fetchJson(
-                "/api/search-history/"
+    if (!allHistorySearches.length) {
+        historyBox.innerHTML = "<p class='history-empty'>No previous searches yet.</p>";
+        if (historySearchCount) {
+            historySearchCount.textContent = "0 total";
+        }
+        return;
+    }
+
+    let filtered = allHistorySearches;
+    if (query) {
+        filtered = allHistorySearches.filter(item => {
+            const name = String(item.search || "").toLowerCase();
+            return name.includes(query);
+        });
+    }
+
+    if (historySearchCount) {
+        if (query) {
+            historySearchCount.textContent = `${filtered.length} of ${allHistorySearches.length}`;
+        } else {
+            historySearchCount.textContent = `${allHistorySearches.length} total`;
+        }
+    }
+
+    if (!filtered.length) {
+        historyBox.innerHTML = `
+            <p class="history-empty">
+                No searches matching "${escapeHtml(query)}"
+            </p>
+        `;
+        return;
+    }
+
+    historyBox.innerHTML = "";
+
+    for (const item of filtered) {
+        const searchName = String(item.search || "");
+        const parts = searchName.split(" - ");
+        const keyword = parts.shift() || "";
+        const location = parts.join(" - ") || "";
+
+        const row = document.createElement("div");
+        row.className = "history-row";
+
+        row.innerHTML = `
+            <div>
+                <strong>${escapeHtml(searchName)}</strong>
+                <span>${Number(item.count || 0)} jobs</span>
+            </div>
+            <div class="actions">
+                <button
+                    type="button"
+                    class="button small view-history"
+                    data-keyword="${escapeHtml(keyword)}"
+                    data-location="${escapeHtml(location)}"
+                >
+                    View
+                </button>
+                <a
+                    class="button small secondary"
+                    href="${makeDownloadUrl(keyword, location)}"
+                >
+                    Download
+                </a>
+                <button
+                    type="button"
+                    class="button small danger delete-history"
+                    data-search="${escapeHtml(searchName)}"
+                    data-keyword="${escapeHtml(keyword)}"
+                    data-location="${escapeHtml(location)}"
+                    title="Delete this search"
+                >
+                    Delete
+                </button>
+            </div>
+        `;
+
+        historyBox.appendChild(row);
+    }
+
+    // View handler
+    historyBox.querySelectorAll(".view-history").forEach(item => {
+        item.addEventListener("click", async () => {
+            try {
+                await loadCurrentSearch(
+                    item.dataset.keyword,
+                    item.dataset.location
+                );
+                currentPanel.scrollIntoView({ behavior: "smooth" });
+            } catch (error) {
+                setStatus(error.message, "error");
+            }
+        });
+    });
+
+    // Individual Delete handler
+    historyBox.querySelectorAll(".delete-history").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const searchName = btn.dataset.search;
+            const keyword = btn.dataset.keyword;
+            const location = btn.dataset.location;
+
+            const confirmed = window.confirm(
+                `Are you sure you want to delete "${searchName}"?\nThis will remove it from the Excel workbook.`
             );
+            if (!confirmed) return;
+
+            btn.disabled = true;
+            btn.textContent = "Deleting...";
+
+            try {
+                const res = await fetchJson("/api/delete-search/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        search_name: searchName,
+                        keyword: keyword,
+                        location: location
+                    })
+                });
+
+                setStatus(`Deleted "${searchName}" from search history.`, "success");
+
+                // If currently showing this search, hide it
+                if (currentTitle && currentTitle.textContent.toLowerCase().includes(keyword.toLowerCase())) {
+                    currentPanel.hidden = true;
+                }
+
+                await loadHistory();
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = "Delete";
+                setStatus(err.message || "Failed to delete search.", "error");
+            }
+        });
+    });
+}
 
 
-        const searches =
-            data.searches || [];
-
-
-        if (!searches.length) {
-
-            historyBox.innerHTML =
-                "<p>No previous searches yet.</p>";
-
-            return;
-        }
-
-
-        historyBox.innerHTML = "";
-
-
-        for (const item of searches) {
-
-            const searchName =
-                String(
-                    item.search || ""
-                );
-
-
-            const parts =
-                searchName.split(" - ");
-
-
-            const keyword =
-                parts.shift() || "";
-
-
-            const location =
-                parts.join(" - ") || "";
-
-
-            const row =
-                document.createElement("div");
-
-
-            row.className =
-                "history-row";
-
-
-            row.innerHTML = `
-
-                <div>
-
-                    <strong>
-                        ${escapeHtml(searchName)}
-                    </strong>
-
-                    <span>
-                        ${Number(item.count || 0)}
-                        jobs
-                    </span>
-
-                </div>
-
-
-                <div class="actions">
-
-                    <button
-                        type="button"
-                        class="button small view-history"
-                        data-keyword="${escapeHtml(keyword)}"
-                        data-location="${escapeHtml(location)}"
-                    >
-                        View
-                    </button>
-
-
-                    <a
-                        class="button small secondary"
-                        href="${makeDownloadUrl(
-                            keyword,
-                            location
-                        )}"
-                    >
-                        Download
-                    </a>
-
-                </div>
-            `;
-
-
-            historyBox.appendChild(row);
-        }
-
-
-        document
-            .querySelectorAll(".view-history")
-            .forEach(item => {
-
-                item.addEventListener(
-                    "click",
-                    async () => {
-
-                        try {
-
-                            await loadCurrentSearch(
-                                item.dataset.keyword,
-                                item.dataset.location
-                            );
-
-                            currentPanel.scrollIntoView({
-                                behavior: "smooth"
-                            });
-
-                        } catch (error) {
-
-                            setStatus(
-                                error.message,
-                                "error"
-                            );
-                        }
-                    }
-                );
-            });
-
-
+async function loadHistory() {
+    try {
+        const data = await fetchJson("/api/search-history/");
+        allHistorySearches = data.searches || [];
+        filterAndRenderHistory();
     } catch (error) {
-
         historyBox.innerHTML = `
             <div class="status error">
                 ${escapeHtml(error.message)}
@@ -428,6 +461,50 @@ async function loadHistory() {
         `;
     }
 }
+
+
+if (historySearchInput) {
+    historySearchInput.addEventListener("input", () => {
+        filterAndRenderHistory();
+    });
+}
+
+
+if (deleteAllHistoryBtn) {
+    deleteAllHistoryBtn.addEventListener("click", async () => {
+        if (!allHistorySearches.length) return;
+
+        const confirmed = window.confirm(
+            "Are you sure you want to delete ALL search history?\nThis will clear all stored search sheets from the Excel file."
+        );
+        if (!confirmed) return;
+
+        deleteAllHistoryBtn.disabled = true;
+        deleteAllHistoryBtn.textContent = "Clearing...";
+
+        try {
+            await fetchJson("/api/clear-history/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            setStatus("All previous search history has been cleared.", "success");
+            currentPanel.hidden = true;
+            if (historySearchInput) {
+                historySearchInput.value = "";
+            }
+            await loadHistory();
+        } catch (err) {
+            setStatus(err.message || "Failed to clear search history.", "error");
+        } finally {
+            deleteAllHistoryBtn.disabled = false;
+            deleteAllHistoryBtn.textContent = "Delete All";
+        }
+    });
+}
+
 
 
 form.addEventListener(

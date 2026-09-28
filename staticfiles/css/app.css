@@ -214,6 +214,19 @@ input:focus {
     font-size: 12px;
 }
 
+.button.danger {
+    background: #fff;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.button.danger:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #b91c1c;
+}
+
+
 .button:disabled {
     opacity: .55;
     cursor: not-allowed;
@@ -360,10 +373,60 @@ td strong {
    SEARCH HISTORY
 ---------------------------------------------------------- */
 
+.history-toolbar {
+    margin-bottom: 14px;
+}
+
+.history-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.history-search-wrapper input {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 14px;
+    padding-right: 95px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.history-search-wrapper input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.history-search-count {
+    position: absolute;
+    right: 12px;
+    font-size: 11.5px;
+    color: var(--muted);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.history-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    background: var(--surface-soft);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    margin: 0;
+}
+
 .history-list {
     display: grid;
     gap: 10px;
 }
+
 
 .history-row {
     display: flex;
