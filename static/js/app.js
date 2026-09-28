@@ -330,7 +330,8 @@ function renderJobs(
 
 async function loadCurrentSearch(
     keyword,
-    location
+    location,
+    preserveStats = false
 ) {
 
     const url =
@@ -357,11 +358,12 @@ async function loadCurrentSearch(
         );
 
 
-    statFound.textContent =
-        data.count || 0;
-
-    statVerified.textContent =
-        data.count || 0;
+    if (!preserveStats) {
+        statFound.textContent = data.count || 0;
+        statVerified.textContent = data.count || 0;
+        statRejected.textContent = 0;
+        statNew.textContent = "-";
+    }
 
 
     renderJobs(
@@ -648,7 +650,7 @@ form.addEventListener(
                 data.verified || 0;
 
             statRejected.textContent =
-                (data.location_rejected || 0);
+                (data.location_rejected || 0) + (data.expired_rejected || 0);
 
             statNew.textContent =
                 data.new_jobs || 0;
@@ -679,7 +681,8 @@ form.addEventListener(
 
             await loadCurrentSearch(
                 keyword,
-                location
+                location,
+                true
             );
 
 
