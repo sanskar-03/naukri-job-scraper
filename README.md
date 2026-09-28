@@ -2,15 +2,18 @@
 
 Django web application for searching Naukri listings with Playwright and appending only new jobs to an Excel workbook.
 
+## Live Demo
+- **Vercel Hosted Web App**: [https://naukri-job-scraper-sanskarkumar838383-6169.vercel.app](https://naukri-job-scraper-sanskarkumar838383-6169.vercel.app)
+
 ## Features
 - Keyword, location and page controls
-- Playwright Chromium scraping
-- Job title, company, location, experience, skills, posted date and URL
+- Playwright Chromium scraping with headless/headed options
+- Captures: Job title, company, location, experience, skills, posted date and URL
 - Duplicate prevention by Job ID and Job URL
-- Existing Excel records are preserved
-- Dashboard refreshes after every run
-- Download `naukri_jobs.xlsx`
-- Clear success/error status; HTTP 200 is not treated as a successful scrape unless the API reports the result
+- Existing Excel records are preserved (Master History + Per-search sheets)
+- Web Dashboard with real-time counters (Found, Verified, Rejected, New)
+- Download Master Excel (`naukri_jobs.xlsx`) or search-filtered Excel directly
+- Error handling and logging (`naukri_scraper.log`)
 
 ## Local setup (Windows)
 ```bat
