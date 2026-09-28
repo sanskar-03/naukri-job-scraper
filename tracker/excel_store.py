@@ -172,9 +172,15 @@ def read_sheet_jobs(ws):
                     else ""
                 )
 
+        # Filter out jobs that are 30+ days old (expired)
+        posted = str(job.get("posted_date", "")).lower()
+        if "30+" in posted or "30 days" in posted or "expired" in posted:
+            continue
+
         jobs.append(job)
 
     return jobs
+
 
 
 def read_jobs(path):
