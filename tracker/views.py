@@ -322,6 +322,10 @@ def run_scraper(request):
             payload.get("location") or ""
         ).strip()
 
+        experience = str(
+            payload.get("experience") or ""
+        ).strip().lower()
+
         try:
             pages = max(
                 1,
@@ -361,7 +365,8 @@ def run_scraper(request):
                 keyword=keyword,
                 location=location,
                 pages=pages,
-                excel_path=settings.DATA_FILE
+                excel_path=settings.DATA_FILE,
+                experience=experience
             )
             return JsonResponse(result)
 
@@ -419,7 +424,8 @@ def run_scraper(request):
                 keyword=keyword,
                 location=location,
                 pages=pages,
-                excel_path=settings.DATA_FILE
+                excel_path=settings.DATA_FILE,
+                experience=experience
             )
             return JsonResponse(result)
 
@@ -546,7 +552,8 @@ def run_scraper(request):
             keyword=keyword,
             location=location,
             pages=pages,
-            excel_path=settings.DATA_FILE
+            excel_path=settings.DATA_FILE,
+            experience=experience
         )
         return JsonResponse(result)
 

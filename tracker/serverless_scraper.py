@@ -161,7 +161,7 @@ def get_job_titles(keyword):
 # SERVERLESS SCRAPER EXECUTION
 # ============================================================
 
-def run_serverless_scrape(keyword, location, pages, excel_path):
+def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
     excel_path = Path(excel_path)
     req_city = clean(location).lower()
     companies = COMPANIES_BY_LOCATION.get(req_city, DEFAULT_COMPANIES)
@@ -176,10 +176,24 @@ def run_serverless_scrape(keyword, location, pages, excel_path):
     seed_val = int(hashlib.md5(f"{keyword}_{location}_{pages}".encode()).hexdigest(), 16) % (10**8)
     rng = random.Random(seed_val)
 
-    exp_ranges = ["1-3 Yrs", "2-5 Yrs", "3-6 Yrs", "4-8 Yrs", "5-10 Yrs", "0-2 Yrs", "2-4 Yrs"]
+    # Map experience filter to concrete ranges
+    EXP_MAP = {
+        "fresher": ["0-1 Yrs", "0-2 Yrs", "Fresher"],
+        "0-2":     ["0-1 Yrs", "0-2 Yrs"],
+        "1-3":     ["1-3 Yrs", "0-2 Yrs"],
+        "2-5":     ["2-5 Yrs", "2-4 Yrs", "3-6 Yrs"],
+        "3-6":     ["3-6 Yrs", "2-5 Yrs", "4-8 Yrs"],
+        "4-8":     ["4-8 Yrs", "3-6 Yrs", "5-10 Yrs"],
+        "5-10":    ["5-10 Yrs", "4-8 Yrs"],
+        "senior":  ["8-12 Yrs", "10+ Yrs", "5-10 Yrs"],
+    }
+    all_exp_ranges = ["1-3 Yrs", "2-5 Yrs", "3-6 Yrs", "4-8 Yrs", "5-10 Yrs", "0-2 Yrs", "2-4 Yrs", "0-1 Yrs"]
+    exp_ranges = EXP_MAP.get(experience, all_exp_ranges) if experience else all_exp_ranges
+
     posted_options = ["Just Now", "1 Day Ago", "2 Days Ago", "3 Days Ago", "Few Hours Ago", "Today"]
     other_cities = ["Bengaluru", "Hyderabad", "Pune", "Mumbai", "Delhi / NCR", "Noida", "Kolkata"]
     other_cities = [c for c in other_cities if c.lower() != req_city]
+
 
     raw_jobs = []
 

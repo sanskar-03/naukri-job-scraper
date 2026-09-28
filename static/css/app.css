@@ -130,6 +130,15 @@ h2 {
     align-items: end;
 }
 
+.form-grid-5 {
+    grid-template-columns:
+        minmax(200px, 1fr)
+        minmax(160px, 0.7fr)
+        minmax(155px, 0.7fr)
+        90px
+        auto;
+}
+
 label {
     display: block;
 }
@@ -161,6 +170,61 @@ input:focus {
 
 .form-action {
     display: flex;
+}
+
+/* Experience toggle row */
+.exp-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.exp-toggle-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.exp-toggle-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.exp-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background .15s ease,
+        border-color .15s ease,
+        color .15s ease,
+        transform .1s ease;
+}
+
+.exp-toggle-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.exp-toggle-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    font-weight: 700;
 }
 
 /* ----------------------------------------------------------
@@ -422,6 +486,75 @@ td strong {
     margin: 0;
 }
 
+.realtime-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+/* Welcome / demo card */
+.history-welcome-card {
+    text-align: center;
+    padding: 40px 28px;
+    border: 2px dashed var(--border);
+    background: var(--surface-soft);
+}
+
+.history-welcome-card .welcome-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.history-welcome-card h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: var(--text);
+}
+
+.history-welcome-card > p {
+    max-width: 480px;
+    margin: 0 auto 24px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.welcome-demo {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.welcome-demo-label {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.demo-row {
+    opacity: 0.6;
+    pointer-events: none;
+    user-select: none;
+}
+
 .history-list {
     display: grid;
     gap: 10px;
@@ -465,7 +598,8 @@ td strong {
         flex-direction: column;
     }
 
-    .form-grid {
+    .form-grid,
+    .form-grid-5 {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
     }

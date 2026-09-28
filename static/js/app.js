@@ -34,6 +34,12 @@ const statNew =
 const historyBox =
     document.getElementById("searchHistory");
 
+const historySection =
+    document.getElementById("historySection");
+
+const historyWelcomeCard =
+    document.getElementById("historyWelcomeCard");
+
 const historySearchInput =
     document.getElementById("historySearchInput");
 
@@ -43,7 +49,80 @@ const historySearchCount =
 const deleteAllHistoryBtn =
     document.getElementById("deleteAllHistoryBtn");
 
+const expToggleGroup =
+    document.getElementById("expToggleGroup");
+
+const experienceInput =
+    document.getElementById("experience");
+
+// ----------------------------------------------------------------
+// SESSION HISTORY — stored in localStorage, isolated per browser
+// Key: "njt_session_history" → JSON array of {search, keyword,
+//       location, experience, count, ts}
+// ----------------------------------------------------------------
+const LS_KEY = "njt_session_history";
+
+function getLocalHistory() {
+    try {
+        return JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+    } catch {
+        return [];
+    }
+}
+
+function saveLocalHistory(arr) {
+    localStorage.setItem(LS_KEY, JSON.stringify(arr));
+}
+
+function addToLocalHistory(keyword, location, experience, count) {
+    const arr = getLocalHistory();
+    const search = `${keyword} - ${location}`;
+    // Remove old entry with same search (upsert)
+    const filtered = arr.filter(
+        item => item.search.toLowerCase() !== search.toLowerCase()
+    );
+    filtered.unshift({
+        search,
+        keyword,
+        location,
+        experience: experience || "Any",
+        count,
+        ts: Date.now()
+    });
+    // Keep last 50 searches per browser
+    saveLocalHistory(filtered.slice(0, 50));
+}
+
+function removeFromLocalHistory(searchName) {
+    const arr = getLocalHistory().filter(
+        item => item.search.toLowerCase() !== searchName.toLowerCase()
+    );
+    saveLocalHistory(arr);
+}
+
+function clearLocalHistory() {
+    localStorage.removeItem(LS_KEY);
+}
+
 let allHistorySearches = [];
+
+// ----------------------------------------------------------------
+// Experience toggle
+// ----------------------------------------------------------------
+if (expToggleGroup) {
+    expToggleGroup.querySelectorAll(".exp-toggle-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            expToggleGroup.querySelectorAll(".exp-toggle-btn").forEach(
+                b => b.classList.remove("active")
+            );
+            btn.classList.add("active");
+            if (experienceInput) {
+                experienceInput.value = btn.dataset.value || "";
+            }
+        });
+    });
+}
+
 
 
 
@@ -347,6 +426,10 @@ function filterAndRenderHistory() {
         const parts = searchName.split(" - ");
         const keyword = parts.shift() || "";
         const location = parts.join(" - ") || "";
+        const expLabel = item.experience && item.experience !== "Any" ? `· ${escapeHtml(item.experience)}` : "";
+        const timeLabel = item.ts
+            ? new Date(item.ts).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+            : "";
 
         const row = document.createElement("div");
         row.className = "history-row";
@@ -354,7 +437,7 @@ function filterAndRenderHistory() {
         row.innerHTML = `
             <div>
                 <strong>${escapeHtml(searchName)}</strong>
-                <span>${Number(item.count || 0)} jobs</span>
+                <span>${Number(item.count || 0)} jobs ${expLabel} ${timeLabel ? "· " + escapeHtml(timeLabel) : ""}</span>
             </div>
             <div class="actions">
                 <button
@@ -376,8 +459,7 @@ function filterAndRenderHistory() {
                     class="button small danger delete-history"
                     data-search="${escapeHtml(searchName)}"
                     data-keyword="${escapeHtml(keyword)}"
-                    data-location="${escapeHtml(location)}"
-                    title="Delete this search"
+                    title="Remove from this browser's history"
                 >
                     Delete
                 </button>
@@ -402,65 +484,45 @@ function filterAndRenderHistory() {
         });
     });
 
-    // Individual Delete handler
+    // Individual Delete — localStorage only (per-browser, instant, no server round-trip)
     historyBox.querySelectorAll(".delete-history").forEach(btn => {
-        btn.addEventListener("click", async () => {
+        btn.addEventListener("click", () => {
             const searchName = btn.dataset.search;
             const keyword = btn.dataset.keyword;
-            const location = btn.dataset.location;
 
-            const confirmed = window.confirm(
-                `Are you sure you want to delete "${searchName}"?\nThis will remove it from the Excel workbook.`
-            );
-            if (!confirmed) return;
+            if (!window.confirm(`Remove "${searchName}" from your history?`)) return;
 
-            btn.disabled = true;
-            btn.textContent = "Deleting...";
+            removeFromLocalHistory(searchName);
+            setStatus(`Removed "${searchName}" from your history.`, "success");
 
-            try {
-                const res = await fetchJson("/api/delete-search/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        search_name: searchName,
-                        keyword: keyword,
-                        location: location
-                    })
-                });
-
-                setStatus(`Deleted "${searchName}" from search history.`, "success");
-
-                // If currently showing this search, hide it
-                if (currentTitle && currentTitle.textContent.toLowerCase().includes(keyword.toLowerCase())) {
-                    currentPanel.hidden = true;
-                }
-
-                await loadHistory();
-            } catch (err) {
-                btn.disabled = false;
-                btn.textContent = "Delete";
-                setStatus(err.message || "Failed to delete search.", "error");
+            if (currentTitle && currentTitle.textContent.toLowerCase().includes(keyword.toLowerCase())) {
+                currentPanel.hidden = true;
             }
+
+            loadHistory();
         });
     });
 }
 
 
+// ----------------------------------------------------------------
+// LOAD HISTORY — reads from localStorage (session-scoped per browser)
+// ----------------------------------------------------------------
 async function loadHistory() {
-    try {
-        const data = await fetchJson("/api/search-history/");
-        allHistorySearches = data.searches || [];
-        filterAndRenderHistory();
-    } catch (error) {
-        historyBox.innerHTML = `
-            <div class="status error">
-                ${escapeHtml(error.message)}
-            </div>
-        `;
+    allHistorySearches = getLocalHistory();
+
+    // Toggle panels
+    if (allHistorySearches.length > 0) {
+        if (historySection) historySection.hidden = false;
+        if (historyWelcomeCard) historyWelcomeCard.hidden = true;
+    } else {
+        if (historySection) historySection.hidden = true;
+        if (historyWelcomeCard) historyWelcomeCard.hidden = false;
     }
+
+    filterAndRenderHistory();
 }
+
 
 
 if (historySearchInput) {
@@ -475,7 +537,7 @@ if (deleteAllHistoryBtn) {
         if (!allHistorySearches.length) return;
 
         const confirmed = window.confirm(
-            "Are you sure you want to delete ALL search history?\nThis will clear all stored search sheets from the Excel file."
+            "Are you sure you want to delete ALL search history from this browser?"
         );
         if (!confirmed) return;
 
@@ -483,18 +545,18 @@ if (deleteAllHistoryBtn) {
         deleteAllHistoryBtn.textContent = "Clearing...";
 
         try {
-            await fetchJson("/api/clear-history/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+            // Clear server-side too if possible (best effort)
+            try {
+                await fetchJson("/api/clear-history/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+            } catch (_) { /* server may fail silently */ }
 
+            clearLocalHistory();
             setStatus("All previous search history has been cleared.", "success");
             currentPanel.hidden = true;
-            if (historySearchInput) {
-                historySearchInput.value = "";
-            }
+            if (historySearchInput) historySearchInput.value = "";
             await loadHistory();
         } catch (err) {
             setStatus(err.message || "Failed to clear search history.", "error");
@@ -534,6 +596,10 @@ form.addEventListener(
                 .value;
 
 
+        const experience =
+            experienceInput ? (experienceInput.value || "") : "";
+
+
         if (!keyword || !location) {
 
             setStatus(
@@ -546,14 +612,13 @@ form.addEventListener(
 
 
         button.disabled = true;
-
-        button.textContent =
-            "Scraping...";
+        button.textContent = "Searching...";
 
 
         setStatus(
-            `Searching Naukri for `
-            + `${keyword} in ${location}...`,
+            `Searching Naukri for ${keyword} in ${location}`
+            + (experience ? ` (${experience})` : "")
+            + "...",
             "info"
         );
 
@@ -574,7 +639,8 @@ form.addEventListener(
                         body: JSON.stringify({
                             keyword,
                             location,
-                            pages
+                            pages,
+                            experience
                         })
                     }
                 );
@@ -605,6 +671,15 @@ form.addEventListener(
             );
 
 
+            // Save to this browser's local session history
+            addToLocalHistory(
+                keyword,
+                location,
+                experience,
+                data.verified || data.current_search_count || 0
+            );
+
+
             await loadCurrentSearch(
                 keyword,
                 location
@@ -624,9 +699,7 @@ form.addEventListener(
         } finally {
 
             button.disabled = false;
-
-            button.textContent =
-                "Start Scrape";
+            button.textContent = "\u{1F50D} Search Jobs";
         }
     }
 );

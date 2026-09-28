@@ -88,7 +88,7 @@
                         id="keyword"
                         name="keyword"
                         type="text"
-                        placeholder="Java Developer"
+                        placeholder="e.g. Python Developer"
                         required
                     >
 
@@ -105,7 +105,7 @@
                         id="location"
                         name="location"
                         type="text"
-                        placeholder="Chennai"
+                        placeholder="e.g. Chennai"
                         required
                     >
 
@@ -137,10 +137,49 @@
                         class="button primary"
                         type="submit"
                     >
-                        Start Scrape
+                        &#128269; Search Jobs
                     </button>
 
                 </div>
+
+            </div>
+
+
+            <!-- Experience toggle -->
+            <div class="exp-toggle-row">
+
+                <span class="exp-toggle-label">Experience Level</span>
+
+                <div class="exp-toggle-group" id="expToggleGroup">
+
+                    <button
+                        type="button"
+                        class="exp-toggle-btn active"
+                        data-value=""
+                    >
+                        &#127775; Any
+                    </button>
+
+                    <button
+                        type="button"
+                        class="exp-toggle-btn"
+                        data-value="fresher"
+                    >
+                        &#127331; Fresher
+                    </button>
+
+                    <button
+                        type="button"
+                        class="exp-toggle-btn"
+                        data-value="experienced"
+                    >
+                        &#128188; Experienced
+                    </button>
+
+                </div>
+
+                <!-- Hidden input carries the value to JS -->
+                <input type="hidden" id="experience" name="experience" value="">
 
             </div>
 
@@ -294,7 +333,8 @@
     </section>
 
 
-    <section class="panel">
+    <!-- History panel: hidden by default, revealed after first search -->
+    <section class="panel" id="historySection" hidden>
 
         <div class="section-heading">
 
@@ -302,6 +342,7 @@
 
                 <p class="eyebrow">
                     SEARCH HISTORY
+                    <span class="realtime-badge" title="History is fetched fresh from the server each time">● LIVE</span>
                 </p>
 
                 <h2>
@@ -336,7 +377,7 @@
                 <input
                     id="historySearchInput"
                     type="text"
-                    placeholder="Search previous history by keyword or location..."
+                    placeholder="Filter by keyword or location..."
                     autocomplete="off"
                 >
 
@@ -353,8 +394,39 @@
         <div
             id="searchHistory"
             class="history-list"
-        >
-            Loading...
+        ></div>
+
+    </section>
+
+
+    <!-- Welcome / demo card: shown only when no history exists (fresh session) -->
+    <section class="panel history-welcome-card" id="historyWelcomeCard">
+
+        <div class="welcome-icon">🔍</div>
+
+        <h3>No search history yet</h3>
+
+        <p>
+            Run a search above and your results will appear here —
+            stored per-search in the Excel workbook and fetched
+            <strong>live</strong> every time you visit.
+        </p>
+
+        <div class="welcome-demo">
+            <p class="welcome-demo-label">Example — after a search you'll see cards like this:</p>
+
+            <div class="history-row demo-row">
+                <div>
+                    <strong>Python Developer · Bengaluru</strong>
+                    <span>24 jobs found</span>
+                </div>
+                <div class="actions">
+                    <span class="button small" style="opacity:.5;cursor:default">View</span>
+                    <span class="button small secondary" style="opacity:.5;cursor:default">Download</span>
+                    <span class="button small danger" style="opacity:.5;cursor:default">Delete</span>
+                </div>
+            </div>
+
         </div>
 
     </section>
