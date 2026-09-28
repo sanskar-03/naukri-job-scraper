@@ -304,11 +304,14 @@ function renderJobs(
 
                 <div class="actions">
 
-                    ${
-                        (job.job_id && job.job_id.startsWith("nk_"))
-                            ? `<a class="button small" href="#" onclick="alert('This is mock data generated on Vercel. To view real job descriptions with the Apply button, you must run the Playwright scraper locally.'); return false;">📄 View Job</a>`
-                            : `<a class="button small" href="${escapeHtml(job.job_url || '#')}" target="_blank" rel="noopener noreferrer">📄 View Job</a>`
-                    }
+                    <a
+                        class="button small"
+                        href="${escapeHtml(job.job_url || '#')}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        📄 View Job
+                    </a>
 
                     <a
                         class="button small secondary"
