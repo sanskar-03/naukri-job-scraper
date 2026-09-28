@@ -222,8 +222,10 @@ def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
         job_hash = hashlib.md5(f"{keyword}_{location}_{company}_{title}_{i}".encode()).hexdigest()[:8]
         job_id = f"nk_{job_hash}"
         slug = re.sub(r'[^a-z0-9]+', '-', f"{title}-{company}".lower()).strip('-')
-        job_url = f"https://www.naukri.com/job-listings-{slug}-{job_id}?src=seo_srp&sid=1700000000"
-
+        # On Vercel, we must generate a real Search URL because fake IDs redirect to the homepage.
+        url_kw = str(keyword).replace(' ', '-').lower()
+        url_loc = str(location).replace(' ', '-').lower()
+        job_url = f"https://www.naukri.com/{url_kw}-jobs-in-{url_loc}?src=seo_srp&sid=1700000000"
         job = {
             "job_id": job_id,
             "title": title,
@@ -282,6 +284,10 @@ def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
 
     already_stored = max(0, len(safe_jobs) - len(new_jobs))
     current_jobs = read_search_jobs(excel_path, keyword, location)
+    if not current_jobs:
+        current_jobs = safe_jobs # Fallback for Vercel read-only filesystem where save fails
+
+    total_stored = len(read_jobs(excel_path))
     total_stored = len(read_jobs(excel_path))
 
     return {
@@ -293,6 +299,7 @@ def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
         "location_rejected": location_rejected,
         "expired_rejected": expired_rejected,
         "current_search_count": len(current_jobs),
+        "jobs": current_jobs,
         "total_stored": total_stored,
         "keyword": keyword,
         "location": location,

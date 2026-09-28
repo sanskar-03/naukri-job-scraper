@@ -682,11 +682,18 @@ form.addEventListener(
             );
 
 
-            await loadCurrentSearch(
-                keyword,
-                location,
-                true
-            );
+            if (data.jobs && data.jobs.length > 0) {
+                currentPanel.hidden = false;
+                currentTitle.textContent = `${keyword} · ${location}`;
+                currentDownload.href = makeDownloadUrl(keyword, location);
+                renderJobs(data.jobs, keyword, location);
+            } else {
+                await loadCurrentSearch(
+                    keyword,
+                    location,
+                    true
+                );
+            }
 
 
             await loadHistory();

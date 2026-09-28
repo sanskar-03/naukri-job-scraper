@@ -527,6 +527,8 @@ def run_scraper(request):
             len(current_jobs)
         )
 
+        result["jobs"] = current_jobs
+
         result["total_stored"] = len(
             read_jobs(settings.DATA_FILE)
         )
