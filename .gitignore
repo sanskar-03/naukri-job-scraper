@@ -1,0 +1,21 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Runtime files & debug artifacts
+runtime/
+logs/
+*.log
+
+# SQLite
+*.sqlite3
+
+# Keep staticfiles for WhiteNoise deployment
+!staticfiles/

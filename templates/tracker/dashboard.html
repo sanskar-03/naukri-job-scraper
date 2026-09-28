@@ -1,0 +1,335 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Naukri Job Tracker</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/app.css' %}"
+    >
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="hero">
+
+        <div>
+
+            <p class="eyebrow">
+                PLAYWRIGHT SCRAPER · DJANGO DASHBOARD · EXCEL HISTORY
+            </p>
+
+            <h1>
+                Naukri Job Tracker
+            </h1>
+
+            <p class="subtitle">
+                Search jobs dynamically, verify their location,
+                prevent duplicates and download each search separately.
+            </p>
+
+        </div>
+
+        <a
+            class="button secondary"
+            href="/download/jobs.xlsx"
+        >
+            Download Master Excel
+        </a>
+
+    </header>
+
+
+    <section class="panel">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>
+                    Run a Search
+                </h2>
+
+                <p>
+                    Jobs are checked against the requested location
+                    before being stored.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form id="searchForm">
+
+            <div class="form-grid">
+
+                <label>
+
+                    <span>
+                        Keyword
+                    </span>
+
+                    <input
+                        id="keyword"
+                        name="keyword"
+                        type="text"
+                        placeholder="Java Developer"
+                        required
+                    >
+
+                </label>
+
+
+                <label>
+
+                    <span>
+                        Location
+                    </span>
+
+                    <input
+                        id="location"
+                        name="location"
+                        type="text"
+                        placeholder="Chennai"
+                        required
+                    >
+
+                </label>
+
+
+                <label>
+
+                    <span>
+                        Pages
+                    </span>
+
+                    <input
+                        id="pages"
+                        name="pages"
+                        type="number"
+                        min="1"
+                        max="5"
+                        value="1"
+                    >
+
+                </label>
+
+
+                <div class="form-action">
+
+                    <button
+                        id="scrapeButton"
+                        class="button primary"
+                        type="submit"
+                    >
+                        Start Scrape
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+
+        <div
+            id="searchStatus"
+            class="status"
+            hidden
+        ></div>
+
+    </section>
+
+
+    <section
+        id="currentSearchPanel"
+        class="panel"
+        hidden
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    CURRENT SEARCH
+                </p>
+
+                <h2 id="currentSearchTitle">
+                    —
+                </h2>
+
+            </div>
+
+            <a
+                id="currentSearchDownload"
+                class="button secondary"
+                href="#"
+            >
+                Download This Search
+            </a>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <span>
+                    Found
+                </span>
+
+                <strong id="statFound">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>
+                    Location Matched
+                </span>
+
+                <strong id="statVerified">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>
+                    Location Rejected
+                </span>
+
+                <strong id="statRejected">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>
+                    New
+                </span>
+
+                <strong id="statNew">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Title
+                        </th>
+
+                        <th>
+                            Company
+                        </th>
+
+                        <th>
+                            Location
+                        </th>
+
+                        <th>
+                            Experience
+                        </th>
+
+                        <th>
+                            Skills
+                        </th>
+
+                        <th>
+                            Posted
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="currentJobsBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <section class="panel">
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    SEARCH HISTORY
+                </p>
+
+                <h2>
+                    Previous Searches
+                </h2>
+
+                <p>
+                    Each search is stored separately.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="searchHistory"
+            class="history-list"
+        >
+            Loading...
+        </div>
+
+    </section>
+
+</div>
+
+
+<script src="{% static 'js/app.js' %}"></script>
+
+</body>
+</html>
