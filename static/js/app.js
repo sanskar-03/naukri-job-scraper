@@ -307,8 +307,8 @@ function renderJobs(
                     <a
                         class="button small"
                         href="${escapeHtml(
-                            job.job_url || "#"
-                        )}"
+            job.job_url || "#"
+        )}"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -653,7 +653,7 @@ form.addEventListener(
                 data.verified || 0;
 
             statRejected.textContent =
-                (data.location_rejected || 0) + (data.expired_rejected || 0);
+                (data.location_rejected || 0);
 
             statNew.textContent =
                 data.new_jobs || 0;
