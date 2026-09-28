@@ -221,17 +221,10 @@ def download_search_excel(request):
 def run_scraper(request):
 
     if not settings.SCRAPER_ENABLED:
-        msg = (
-            "Live browser scraping cannot run inside Vercel Serverless Functions "
-            "(Vercel has strict 10-15s timeouts and does not support headless Chromium). "
-            "To scrape live jobs, run the scraper locally or deploy on a container host like Render / Railway."
-            if getattr(settings, 'IS_VERCEL', False)
-            else "Scraper disabled."
-        )
         return JsonResponse(
             {
                 "ok": False,
-                "error": msg
+                "error": "Scraper disabled."
             },
             status=503
         )
@@ -283,6 +276,16 @@ def run_scraper(request):
                 status=400
             )
 
+        if getattr(settings, 'IS_VERCEL', False):
+            from .serverless_scraper import run_serverless_scrape
+            result = run_serverless_scrape(
+                keyword=keyword,
+                location=location,
+                pages=pages,
+                excel_path=settings.DATA_FILE
+            )
+            return JsonResponse(result)
+
         script = (
             settings.BASE_DIR
             / "scraper"
@@ -331,15 +334,16 @@ def run_scraper(request):
         ).strip()
 
         if proc.returncode != 0:
-
-            return JsonResponse(
-                {
-                    "ok": False,
-                    "error": output[-5000:]
-                    or "Scraper failed."
-                },
-                status=500
+            log.warning("Playwright scraper exited with non-zero code. Falling back to serverless engine.")
+            from .serverless_scraper import run_serverless_scrape
+            result = run_serverless_scrape(
+                keyword=keyword,
+                location=location,
+                pages=pages,
+                excel_path=settings.DATA_FILE
             )
+            return JsonResponse(result)
+
 
         result = {
             "scraped": 0,
@@ -457,18 +461,16 @@ def run_scraper(request):
         return JsonResponse(result)
 
     except subprocess.TimeoutExpired:
-
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": (
-                    "Scraper timed out. "
-                    "Check the visible Playwright "
-                    "browser."
-                ),
-            },
-            status=504
+        log.warning("Playwright scraper timed out. Falling back to serverless scraper engine.")
+        from .serverless_scraper import run_serverless_scrape
+        result = run_serverless_scrape(
+            keyword=keyword,
+            location=location,
+            pages=pages,
+            excel_path=settings.DATA_FILE
         )
+        return JsonResponse(result)
+
 
     except json.JSONDecodeError:
 

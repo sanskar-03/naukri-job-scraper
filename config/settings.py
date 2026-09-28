@@ -54,7 +54,7 @@ if IS_VERCEL:
             'NAME': '/tmp/tracker.sqlite3'
         }
     }
-    SCRAPER_ENABLED = os.getenv('SCRAPER_ENABLED', '0') == '1'
+    SCRAPER_ENABLED = os.getenv('SCRAPER_ENABLED', '1') == '1'
 else:
     RUNTIME_DIR = Path(os.getenv('RUNTIME_DIR', str(BASE_DIR / 'runtime')))
     DATA_FILE = BASE_DIR / 'data' / 'naukri_jobs.xlsx'

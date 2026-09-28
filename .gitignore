@@ -17,5 +17,9 @@ logs/
 # SQLite
 *.sqlite3
 
+# Exports
+data/exports/
+
 # Keep staticfiles for WhiteNoise deployment
 !staticfiles/
+
