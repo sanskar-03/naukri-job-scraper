@@ -240,8 +240,14 @@ def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
     # Strictly filter verified jobs
     safe_jobs = []
     location_rejected = 0
+    expired_rejected = 0
 
     for job in raw_jobs:
+        posted = str(job.get("posted_date", "")).lower()
+        if "30+" in posted or "30 days" in posted or "expired" in posted:
+            expired_rejected += 1
+            continue
+
         if verify_job_location(job, location):
             safe_jobs.append(job)
         else:
@@ -266,6 +272,7 @@ def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
         "new_jobs": len(new_jobs),
         "already_stored": already_stored,
         "location_rejected": location_rejected,
+        "expired_rejected": expired_rejected,
         "current_search_count": len(current_jobs),
         "total_stored": total_stored,
         "keyword": keyword,

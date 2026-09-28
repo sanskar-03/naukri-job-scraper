@@ -436,6 +436,7 @@ def run_scraper(request):
             "new_jobs": 0,
             "already_stored": 0,
             "location_rejected": 0,
+            "expired_rejected": 0,
         }
 
         for line in output.splitlines():

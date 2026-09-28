@@ -653,7 +653,7 @@ form.addEventListener(
                 data.verified || 0;
 
             statRejected.textContent =
-                data.location_rejected || 0;
+                (data.location_rejected || 0) + (data.expired_rejected || 0);
 
             statNew.textContent =
                 data.new_jobs || 0;
@@ -666,9 +666,11 @@ form.addEventListener(
                 + `${data.new_jobs || 0} new, `
                 + `${data.already_stored || 0} already stored, `
                 + `${data.location_rejected || 0} rejected `
-                + `because of location mismatch.`,
+                + `because of location mismatch, `
+                + `${data.expired_rejected || 0} rejected because job has expired time.`,
                 "success"
             );
+
 
 
             // Save to this browser's local session history

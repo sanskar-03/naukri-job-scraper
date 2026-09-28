@@ -1525,9 +1525,14 @@ def filter_verified_jobs(
 
     accepted = []
 
-    rejected = 0
+    location_rejected = 0
+    expired_rejected = 0
 
     for job in jobs:
+        posted = str(job.get("posted_date", "")).lower()
+        if "30+" in posted or "30 days" in posted or "expired" in posted:
+            expired_rejected += 1
+            continue
 
         if verify_job_location(
             job,
@@ -1540,16 +1545,17 @@ def filter_verified_jobs(
 
         else:
 
-            rejected += 1
+            location_rejected += 1
 
     print(
         "LOCATION_SUMMARY|"
         f"requested={requested_location}|"
         f"accepted={len(accepted)}|"
-        f"rejected={rejected}"
+        f"location_rejected={location_rejected}|"
+        f"expired_rejected={expired_rejected}"
     )
 
-    return accepted
+    return accepted, location_rejected, expired_rejected
 
 
 # ============================================================
@@ -1706,7 +1712,7 @@ def main():
     # LOCATION FILTER
     # ========================================================
 
-    verified_jobs = filter_verified_jobs(
+    verified_jobs, location_rejected, expired_rejected = filter_verified_jobs(
         all_jobs,
         args.location
     )
@@ -1725,7 +1731,7 @@ def main():
     safe_jobs = []
 
     for job in verified_jobs:
-
+        # Note: expired jobs were already removed inside filter_verified_jobs
         if verify_job_location(
             job,
             args.location
@@ -1766,7 +1772,8 @@ def main():
         f"verified={len(safe_jobs)}|"
         f"new_jobs={len(new_jobs)}|"
         f"already_stored={already_stored}|"
-        f"rejected={len(all_jobs) - len(safe_jobs)}"
+        f"location_rejected={location_rejected}|"
+        f"expired_rejected={expired_rejected}"
     )
 
     print()
