@@ -3,7 +3,7 @@
 Django web application for searching Naukri listings with Playwright and appending only new jobs to an Excel workbook.
 
 ## Live Demo
-- **Vercel Hosted Web App**: [https://naukri-job-scraper-sanskarkumar838383-6169.vercel.app](https://naukri-job-scraper-sanskarkumar838383-6169.vercel.app)
+- **Vercel Hosted Web App**: [[https://naukri-job-scraper-sanskarkumar838383-6169.vercel.app](https://naukri-job-scraper-eight.vercel.app/)]
 
 ## Features
 - Keyword, location and page controls
