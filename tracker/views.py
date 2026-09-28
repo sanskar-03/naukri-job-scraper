@@ -182,9 +182,9 @@ def download_search_excel(request):
     try:
 
         export_dir = (
-            settings.BASE_DIR
-            / "data"
-            / "exports"
+            Path('/tmp/exports')
+            if getattr(settings, 'IS_VERCEL', False)
+            else settings.BASE_DIR / "data" / "exports"
         )
 
         output = export_search_excel(
