@@ -242,9 +242,28 @@ def run_serverless_scrape(keyword, location, pages, excel_path, experience=""):
     location_rejected = 0
     expired_rejected = 0
 
+    import urllib.request
+    from urllib.error import URLError
+
+    def is_url_expired(url):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            res = urllib.request.urlopen(req, timeout=5)
+            # Naukri redirects fake or expired jobs to ?expJD=true
+            if "expJD=true" in res.geturl():
+                return True
+        except Exception:
+            pass # If it times out or errors, we'll assume it's okay or handle it gracefully
+        return False
+
     for job in raw_jobs:
         posted = str(job.get("posted_date", "")).lower()
         if "30+" in posted or "30 days" in posted or "expired" in posted:
+            expired_rejected += 1
+            continue
+
+        # Each link first verify (check if Naukri considers it expired)
+        if is_url_expired(job["job_url"]):
             expired_rejected += 1
             continue
 
